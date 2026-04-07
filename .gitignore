@@ -1,0 +1,11 @@
+
+.venv/
+.env
+system.json
+_dom.tmp
+temp/
+.playwright/
+.playwright-cli/
+__pycache__/
+*.log
+.claude/
