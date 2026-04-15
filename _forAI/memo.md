@@ -1,31 +1,44 @@
 # Memo
 
-## Version management
+## 제품 기준선
 
-- Use `major.minor.patch` versioning.
-- Start at `1.0.0`.
-- Increase `major` for large structural changes or compatibility-breaking changes.
-- Increase `minor` for new features or meaningful improvements.
-- Increase `patch` for bug fixes or small changes.
-- Record version-by-version changes in `dev_log.md`.
+- 현재 패키지 버전은 `0.1.0`이다.
+- Python 요구 버전은 `>=3.11`이고, 패키지 관리는 `uv` 기준이다.
+- 런타임 의존성은 `playwright`, `pyyaml` 두 개다.
+- 브라우저 바이너리는 패키지 설치와 별도로 `uv run playwright install firefox`가 필요하다.
 
-## Open questions
+## 기본 설정값
 
-- `click()`의 새 페이지 감지는 현재 최대 1.5초 동안 폴링한다. 늦게 뜨는 팝업은 놓칠 수 있어 `expect_popup()` 계열로 바꿀지 검토가 필요하다.
-- `wait_for_selector`의 기본 timeout은 현재 5초다. 실제 사이트별 로딩 편차를 보며 timeout 조정이나 step별 override가 필요한지 확인해야 한다.
+- ex01, ex02, ex03 모두 `BrowserSessionConfig(headed=True, slow_mo=0, timeout_ms=5000.0)`를 사용한다.
+- 공통 프롬프트 문자열은 `browser> `다.
+- ex02/ex03의 기본 시스템 파일은 `.playwright/system.yaml`이다.
+- `.playwright/system.yaml`이 없고 레거시 `temp/system.yaml`만 있으면 그 파일을 fallback으로 사용한다.
+- 스크린샷, DOM dump, YAML 추출, 다운로드 파일은 상대 경로일 때 `.playwright/` 아래로 정리된다.
 
-## Decision criteria
+## 런타임 구조 메모
 
-- 페이지 전체 전환을 확인해야 할 때는 `wait_for_navigation`, AJAX나 SPA처럼 특정 UI가 준비됐는지 확인할 때는 `wait_for`를 우선한다.
-- 브라우저 자동화 산출물과 로컬 설정은 범용 `temp/`보다 목적이 드러나는 `.playwright/` 아래에 둔다.
-- 서버 부하 관점에서는 50ms 폴링 자체보다 실제 `goto`/`click`/재시도 빈도가 더 중요하므로 retry 정책은 보수적으로 유지한다.
+- `browser.py`가 명령 파싱과 Playwright 세션 관리를 모두 담당하고, ex01~ex03은 REPL 제어층만 추가한다.
+- ex01은 순수 브라우저 명령 REPL이다.
+- ex02는 ex01 위에 `macro <name>` 실행과 `--system` 인자 처리를 얹는다.
+- ex03은 ex02 위에 `tasks`, `task <name|number>`, `wait_for`, `wait_for_navigation`, `on_fail` 정책을 얹는다.
+- 루트 `main.py`는 editable install 없이 `src/`를 `sys.path`에 넣은 뒤 ex01 또는 `--ex02`만 호출한다.
+- 패키지 `__main__.py`는 ex01만 실행한다.
 
-## Short notes
+## 동작 규칙
 
-- 학습용 예제는 커맨드라인 인자를 최소화하고, REPL에서 기능을 하나씩 직접 시험하는 흐름을 우선한다.
-- 새 창, iframe, 벤더 로더 페이지는 REPL에서 `title`, `dom`, `screenshot`으로 현재 위치를 계속 확인하는 편이 안전하다.
-- 캔버스 기반 게임방 화면은 DOM보다 스크린샷과 VLM/VLA 접근이 더 현실적이다.
-- `ex02`는 로그인 자동화보다 "수동 입장 후 화면 이해"를 검증하는 예제로 잡는다.
-- `wait_for_selector`는 Playwright `Page` 메서드이며, 현재 `session.page`를 기준으로 selector가 `visible` 상태가 될 때까지 step 실행을 블로킹한다.
-- `wait_for_navigation`은 현재 ex03에서 `page.wait_for_load_state("domcontentloaded")`로 구현되어 있으며, 문서 로딩 완료를 기준으로 다음 단계 진행 여부를 판단한다.
-- `wait_for_selector`는 AJAX/SPA 화면처럼 전체 navigation 없이 DOM 일부만 갱신되는 케이스에서 특히 유용하다.
+- 페이지 전체 전환이 핵심이면 `wait_for_navigation`, 특정 DOM 준비가 핵심이면 `wait_for`를 우선한다.
+- 민감한 입력은 출력 시 `type`, `fill` 명령의 마지막 인자를 `<hidden>`으로 숨긴다.
+- 현재 새 창 감지는 클릭 뒤 최대 1.5초 동안 새 `Page`가 생기는지 폴링하는 방식이다.
+- `download_links`와 `save_yaml`은 실습 상세 페이지 같은 반구조화 화면에서 데이터를 수집하는 데 초점을 둔다.
+
+## 열린 이슈
+
+- `click()`의 새 페이지 감지는 현재 최대 1.5초 동안 폴링하므로 늦게 뜨는 팝업은 놓칠 수 있다.
+- `wait_for_selector` 기본 timeout은 5초라서 사이트별 로딩 편차가 크면 step별 override가 필요할 수 있다.
+- REPL 입력 제어와 브라우저 명령 파싱에 대한 자동화 테스트가 아직 없다.
+
+## 반복 금지
+
+- 실제 저장소 경로가 바뀌었는데 `_forAI` 문서 경로를 예전 값으로 유지하지 않는다.
+- 참고 정보와 남은 작업을 섞지 않는다. 구현 사실은 `memo.md`, 앞으로 할 일은 `plan.md`에 둔다.
+- `.playwright/`로 옮긴 산출물 경로를 다시 범용 `temp/` 문맥으로 설명하지 않는다.

@@ -2,6 +2,7 @@
 
 ## Entries
 
+- 2026-04-15: `forai-scaffold` 기준으로 `_forAI` 문서를 실제 워크스페이스(`/Volumes/data/work/aiwork/playwrite_tutorial`)와 동기화했고, 실행 엔트리포인트, 검증 명령, 런타임 기본값, 레거시 시스템 파일 fallback, 테스트 공백을 문서에 반영했다.
 - 2026-04-07: 직접 파일 URL 첨부는 Playwright download 이벤트 대신 현재 브라우저 세션 쿠키로 URL 저장 fallback을 쓰도록 `download_links`를 보강했고, `save_yaml`은 `학습자` 같은 라벨 별칭도 찾도록 확장했다.
 - 2026-04-07: `export_current_practice_page` 태스크를 목록 화면 기준으로 조정해 첫 번째 실습 상세를 연 뒤 YAML 추출과 첨부 다운로드를 시도하도록 바꿨고, `download_links`는 non-download 링크를 만나면 건너뛰도록 보강했다.
 - 2026-04-07: 현재 페이지에서 라벨 기반 값 추출을 YAML로 저장하는 `save_yaml` 명령과 첨부 링크를 내려받는 `download_links` 명령을 추가하고, 실습 상세 페이지용 export task를 정의했다.
